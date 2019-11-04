@@ -7,7 +7,7 @@ from readFile import readFile
 N = 1 # input port
 input_rate = int(45e6) # input transmision capacity
 C = 25
-B = 500 * 1000   # [bit] Roughly is numOfPakets * average bit in packet
+B = 5000 * 1000   # [bit] Roughly is numOfPakets * average bit in packet
 num_frame = 10000
 
 class Packet:
@@ -140,21 +140,9 @@ if __name__ == "__main__":
 
 
 
-'''
-loss = [0.66,0.622,0.6043,0.573,0.5036,0.475,0.470]
-c = [5,10,25,50,75,100,200]
-
-plt.figure('1')
-plt.plot(c, loss)
-plt.grid()
 
 
 
-
-
-import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
-'''
 
 
 
