@@ -44,8 +44,8 @@ def arrive(L, V, PLR, fulled_released):  # the managed list `L` passed explicitl
             if (len(L))+(len(packets)) <= B:
                 L[0:0]=packets              # insert packets to L element by element
                 fulled_released[0] = fulled_released[0] + total_size
-                print('FF11')
-                print(fulled_released)
+                #print('FF11')
+                #print(fulled_released)
                 #print('L:',end=' ')
                 #display(L)
             else:
@@ -63,16 +63,16 @@ def depart(L, i, fulled_released):  # the managed list `L` passed explicitly.
     while True:
         time.sleep(1/r)
         if len(L) > 0:
-            print('Packet is departed!')
-            p = L.pop()
-            fulled_released[1] = fulled_released[1] + p.size
-            print('FF22')
-            print(fulled_released)
-            del(p)
-            #print('L:',end=' ')
-            #display(L)
-            print('***********  L = ', len(L) ,'    ***********')
-            num_buffer_zero = 0
+            if (time.monotonic() - L[len(L)-1].birth_time) > 1/r:   # Time to process packet
+                print('Packet is departed!')
+                p = L.pop()
+                fulled_released[1] = fulled_released[1] + p.size
+                print(fulled_released)
+                del(p)
+                #print('L:',end=' ')
+                #display(L)
+                print('***********  L = ', len(L) ,'    ***********')
+                num_buffer_zero = 0
         else:
             num_buffer_zero = num_buffer_zero + 1
             if num_buffer_zero > 25:
