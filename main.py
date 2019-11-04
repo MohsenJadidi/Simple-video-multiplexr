@@ -6,10 +6,9 @@ from readFile import readFile
 
 N = 1 # input port
 input_rate = int(45e6) # input transmision capacity
-C = [15, 25, 35] # outgoing rate(per second)
 C = 25
-B = 500 # Buffer size 
-num_frame = 100
+B = 500 * 1000   # [bit] Roughly is numOfPakets * average bit in packet
+num_frame = 10000
 
 class Packet:
     i = 0
@@ -37,11 +36,12 @@ def arrive(L, V, PLR, fulled_released):  # the managed list `L` passed explicitl
     loss_packets = 0       
     for i in range(len(V)):
         time.sleep(1/25)
-        if len(L) < B: 
+        #if len(L) < B: 
+        if (fulled_released[0] - fulled_released[1]) < B:
             print('Frame is recieved!')
             packets, total_size = Frame_to_Packets(V[i],i)
             total_packets = total_packets + len(packets)
-            if (len(L))+(len(packets)) <= B:
+            if ((fulled_released[0] - fulled_released[1]) + total_size) <= B:
                 L[0:0]=packets              # insert packets to L element by element
                 fulled_released[0] = fulled_released[0] + total_size
                 #print('FF11')
@@ -49,6 +49,7 @@ def arrive(L, V, PLR, fulled_released):  # the managed list `L` passed explicitl
                 #print('L:',end=' ')
                 #display(L)
             else:
+                print('Frame is discard!')
                 loss_packets = loss_packets + len(packets)
                 
     PLR.append(total_packets)
@@ -122,7 +123,7 @@ if __name__ == "__main__":
     plt.plot(t[0:10000], V1[0:10000])
     '''
     with Manager() as manager:
-        L = manager.list()  # <-- can be shared between processes.
+        L = manager.list()  # <-- can be shared between processes. Packet store in L
         PLR = manager.list()
         fulled_released = manager.list([0,0])
         processes = []
@@ -139,7 +140,7 @@ if __name__ == "__main__":
 
 
 
-
+'''
 loss = [0.66,0.622,0.6043,0.573,0.5036,0.475,0.470]
 c = [5,10,25,50,75,100,200]
 
@@ -153,7 +154,7 @@ plt.grid()
 
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-
+'''
 
 
 
