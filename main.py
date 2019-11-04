@@ -8,7 +8,7 @@ N = 1 # input port
 input_rate = int(45e6) # input transmision capacity
 C = [15, 25, 35] # outgoing rate(per second)
 C = 25
-B = 1000 # Buffer size 
+B = 500 # Buffer size 
 num_frame = 100
 
 class Packet:
@@ -30,19 +30,22 @@ def display(L):
         print(i,end=' ')
     print(']')    
 
-def arrive(L, V, PLR):  # the managed list `L` passed explicitly.
+def arrive(L, V, PLR, fulled_released):  # the managed list `L` passed explicitly.
     print('L1')
     print(V)
     total_packets = 0
-    loss_packets = 0
+    loss_packets = 0       
     for i in range(len(V)):
         time.sleep(1/25)
         if len(L) < B: 
             print('Frame is recieved!')
-            packets = Frame_to_Packets(V[i],i)
+            packets, total_size = Frame_to_Packets(V[i],i)
             total_packets = total_packets + len(packets)
             if (len(L))+(len(packets)) <= B:
                 L[0:0]=packets              # insert packets to L element by element
+                fulled_released[0] = fulled_released[0] + total_size
+                print('FF11')
+                print(fulled_released)
                 #print('L:',end=' ')
                 #display(L)
             else:
@@ -53,15 +56,19 @@ def arrive(L, V, PLR):  # the managed list `L` passed explicitly.
     PLR.append(loss_packets/total_packets)
     
 
-def depart(L, i):  # the managed list `L` passed explicitly.
+def depart(L, i, fulled_released):  # the managed list `L` passed explicitly.
     print('L2')
     num_buffer_zero = 0
-    r = 75  # r packet per 1 sec
+    r = 100  # r packet per 1 sec
     while True:
         time.sleep(1/r)
         if len(L) > 0:
             print('Packet is departed!')
-            L.pop()
+            p = L.pop()
+            fulled_released[1] = fulled_released[1] + p.size
+            print('FF22')
+            print(fulled_released)
+            del(p)
             #print('L:',end=' ')
             #display(L)
             print('***********  L = ', len(L) ,'    ***********')
@@ -75,18 +82,26 @@ def Frame_to_Packets(bits,frameNumber):
     min_packet_size = 80
     bits_res = bits
     packets = []
+    total_size_packet = 0
     size = (min_packet_size + randrange(0,40)) * 8 # 8 for byte to bit
-    packets.insert(0,Packet(size+(20*8), frameNumber))        # 20*8 for IP header
+    size_with_IP = size + (20*8)
+    packets.insert(0,Packet(size_with_IP, frameNumber))        # 20*8 for IP header
+    total_size_packet = total_size_packet + size_with_IP
     bits_res = bits_res - size
     while bits_res > 0:
         size = (min_packet_size + randrange(0,40)) * 8
         if size > bits_res:
-            packets.insert(0,Packet(bits_res+(20*8), frameNumber))
+            size_with_IP = bits_res+ (20*8)
+            packets.insert(0,Packet(size_with_IP, frameNumber))
+            total_size_packet = total_size_packet + size_with_IP
         else:
-            packets.insert(0,Packet(size+(20*8), frameNumber))
+            size_with_IP = size + (20*8)
+            packets.insert(0,Packet(size_with_IP, frameNumber))
+            total_size_packet = total_size_packet + size_with_IP
+            
         bits_res = bits_res - size 
         
-    return packets        
+    return packets, total_size_packet        
         
     
         
@@ -109,11 +124,12 @@ if __name__ == "__main__":
     with Manager() as manager:
         L = manager.list()  # <-- can be shared between processes.
         PLR = manager.list()
+        fulled_released = manager.list([0,0])
         processes = []
-        p1 = Process(target=arrive, args=(L, V1, PLR))  # Passing the list
+        p1 = Process(target=arrive, args=(L, V1, PLR, fulled_released))  # Passing the list
         p1.start()
         processes.append(p1)
-        p2 = Process(target=depart, args=(L,1))  # Passing the list
+        p2 = Process(target=depart, args=(L, 1, fulled_released))  # Passing the list
         p2.start()
         processes.append(p2)
         for p in processes:
@@ -121,6 +137,22 @@ if __name__ == "__main__":
         print(L)
         print(PLR)
 
+
+
+
+loss = [0.66,0.622,0.6043,0.573,0.5036,0.475,0.470]
+c = [5,10,25,50,75,100,200]
+
+plt.figure('1')
+plt.plot(c, loss)
+plt.grid()
+
+
+
+
+
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
 
 
 
