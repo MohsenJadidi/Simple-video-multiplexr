@@ -7,8 +7,8 @@ from readFile import readFile
 N = 1 # input port
 input_rate = int(45e6) # input transmision capacity
 C = 25
-B = 5000 * 1000   # [bit] Roughly is numOfPakets * average bit in packet
-num_frame = 10000
+B = (5000) * 1000   # [bit] Roughly is numOfPakets * average bit in packet
+#num_frame = 10000
 
 class Packet:
     i = 0
@@ -60,7 +60,7 @@ def arrive(L, V, PLR, fulled_released):  # the managed list `L` passed explicitl
 def depart(L, i, fulled_released):  # the managed list `L` passed explicitly.
     print('L2')
     num_buffer_zero = 0
-    r = 100  # r packet per 1 sec
+    r = 10000  # r packet per 1 sec
     while True:
         time.sleep(1/r)
         if len(L) > 0:
@@ -76,7 +76,7 @@ def depart(L, i, fulled_released):  # the managed list `L` passed explicitly.
                 num_buffer_zero = 0
         else:
             num_buffer_zero = num_buffer_zero + 1
-            if num_buffer_zero > 25:
+            if num_buffer_zero > r: # mean that 1sec buffer is empety
                 break;
 
 def Frame_to_Packets(bits,frameNumber):
@@ -106,17 +106,12 @@ def Frame_to_Packets(bits,frameNumber):
         
     
         
-    
-           
-            
-
 if __name__ == "__main__":  
-
     
     V1 = readFile('V1.txt')
-#    V2 = readFile('V2.txt')
-#    V3 = readFile('V3.txt')
-    V1 = V1[0:num_frame]        
+    #V2 = readFile('V2.txt')
+    #V3 = readFile('V3.txt')
+    #V1 = V1[0:num_frame]        
     '''
     t = [int(i) for i in range(len(V1))]
     plt.figure('Plot V1')
